@@ -1,17 +1,17 @@
 import jwt from 'jsonwebtoken';
 
-export async function authMiddleware(req, res, next) {
-    const token = req.headers.authorization?.split(' ')[1];
+export function authenticateUser(req, res, next) {
+    const jwtToken = req.header('Authorization')?.replace('Bearer ', '');
 
-    if (!token) {
-        return res.status(403).json({ error: 'Acesso negado' });
+    if (!jwtToken) {
+        return res.status(401).json({ erro: 'Acesso não autorizado.' });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        const decodedData = jwt.verify(jwtToken, process.env.JWT_SECRET);
+        req.authenticatedUser = decodedData;
         next();
     } catch (error) {
-        res.status(401).json({ error: 'Token inválido ou expirado' });
+        res.status(401).json({ erro: 'Token inválido.' });
     }
 }

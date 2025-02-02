@@ -15,4 +15,9 @@ const pool = mysql.createPool({
 
 const database = pool.promise();
 
+database
+    .query('SELECT 1')
+    .then(() => console.log('Conectado ao banco de dados com sucesso!'))
+    .catch((err) => console.error('Erro ao conectar ao banco de dados:', err));
+
 export default database;

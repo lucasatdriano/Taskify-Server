@@ -1,10 +1,19 @@
 import express from 'express';
-import { getLists, createList } from '../controllers/listController.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
+import {
+    getUserLists,
+    getUserListById,
+    createUserList,
+    updateUserList,
+    deleteUserList,
+} from '../controllers/listController.js';
+import { authenticateUser } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', authMiddleware, getLists);
-router.post('/', authMiddleware, createList);
+router.get('/', authenticateUser, getUserLists);
+router.get('/:listId', authenticateUser, getUserListById);
+router.post('/', authenticateUser, createUserList);
+router.put('/:listId', authenticateUser, updateUserList);
+router.delete('/:listId', authenticateUser, deleteUserList);
 
 export default router;
