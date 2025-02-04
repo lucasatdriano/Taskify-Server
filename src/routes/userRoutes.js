@@ -20,7 +20,7 @@ const router = express.Router();
 router.post('/register', registerUser);
 /**
  * @swagger
- * /register:
+ * /users/register:
  *   post:
  *     summary: Registra um novo usuário
  *     description: Cria um novo usuário com nome, email e senha.
@@ -54,7 +54,7 @@ router.post('/register', registerUser);
 router.post('/login', Login);
 /**
  * @swagger
- * /login:
+ * /users/login:
  *   post:
  *     summary: Realiza login do usuário
  *     description: Autentica o usuário e retorna tokens JWT (accessToken e refreshToken).
@@ -96,7 +96,7 @@ router.post('/login', Login);
 router.get('/:userId', getUserById);
 /**
  * @swagger
- * /{userId}:
+ * /users/{userId}:
  *   get:
  *     summary: Obtém os detalhes de um usuário
  *     description: Retorna informações do usuário com base no ID fornecido.
@@ -122,7 +122,7 @@ router.get('/:userId', getUserById);
 router.put('/:userId/name', updateUserName);
 /**
  * @swagger
- * /{userId}/name:
+ * /users/{userId}/name:
  *   put:
  *     summary: Atualiza o nome de um usuário
  *     description: Altera o nome do usuário com base no ID fornecido.
@@ -159,7 +159,7 @@ router.put('/:userId/name', updateUserName);
 router.put('/:userId/password', updateUserPassword);
 /**
  * @swagger
- * /{userId}/password:
+ * /users/{userId}/password:
  *   put:
  *     summary: Atualiza a senha de um usuário
  *     description: Altera a senha do usuário com base no ID fornecido.
@@ -201,7 +201,7 @@ router.put('/:userId/password', updateUserPassword);
 router.post('/refreshToken', refreshUserToken);
 /**
  * @swagger
- * /refreshToken:
+ * /users/refreshToken:
  *   post:
  *     summary: Atualiza o accessToken usando um refreshToken válido
  *     description: Gera um novo accessToken usando o refreshToken fornecido.
@@ -233,7 +233,7 @@ router.post('/refreshToken', refreshUserToken);
 router.post('/:userId/logout', logoutUser);
 /**
  * @swagger
- * /{userId}/logout:
+ * /users/{userId}/logout:
  *   post:
  *     summary: Realiza logout do usuário
  *     description: Remove o refreshToken do usuário, efetivando o logout.

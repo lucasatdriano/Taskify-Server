@@ -19,7 +19,7 @@ const router = express.Router();
 router.get('/:listId', authenticateUser, getTasksByList);
 /**
  * @swagger
- * /{listId}:
+ * /tasks/{listId}:
  *   get:
  *     summary: Obtém todas as tarefas de uma lista
  *     tags: [Tasks]
@@ -42,7 +42,7 @@ router.get('/:listId', authenticateUser, getTasksByList);
 router.get('/:listId/:taskId', authenticateUser, getTaskById);
 /**
  * @swagger
- * /{listId}/{taskId}:
+ * /tasks/{listId}/{taskId}:
  *   get:
  *     summary: Obtém uma única tarefa pelo ID
  *     tags: [Tasks]
@@ -73,7 +73,7 @@ router.get('/:listId/:taskId', authenticateUser, getTaskById);
 router.post('/:listId', authenticateUser, createTask);
 /**
  * @swagger
- * /{listId}:
+ * /tasks/{listId}:
  *   post:
  *     summary: Cria uma nova tarefa em uma lista
  *     tags: [Tasks]
@@ -121,7 +121,7 @@ router.post('/:listId', authenticateUser, createTask);
 router.put('/:listId/:taskId', authenticateUser, updateTask);
 /**
  * @swagger
- * /{listId}/{taskId}:
+ * /tasks/{listId}/{taskId}:
  *   put:
  *     summary: Atualiza uma tarefa existente
  *     tags: [Tasks]
@@ -175,7 +175,7 @@ router.put('/:listId/:taskId', authenticateUser, updateTask);
 router.delete('/:listId/:taskId', authenticateUser, deleteTask);
 /**
  * @swagger
- * /{listId}/{taskId}:
+ * /tasks/{listId}/{taskId}:
  *   delete:
  *     summary: Deleta uma tarefa
  *     tags: [Tasks]

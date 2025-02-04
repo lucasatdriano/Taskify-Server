@@ -16,6 +16,7 @@ const router = express.Router();
  *   description: Gerenciamento de listas de cada usuário
  */
 
+router.get('/', authenticateUser, getUserLists);
 /**
  * @swagger
  * /lists:
@@ -47,8 +48,8 @@ const router = express.Router();
  *       500:
  *         description: Erro ao buscar as listas
  */
-router.get('/', authenticateUser, getUserLists);
 
+router.get('/:listId', authenticateUser, getUserListById);
 /**
  * @swagger
  * /lists/{listId}:
@@ -87,8 +88,8 @@ router.get('/', authenticateUser, getUserLists);
  *       500:
  *         description: Erro ao buscar a lista
  */
-router.get('/:listId', authenticateUser, getUserListById);
 
+router.post('/', authenticateUser, createUserList);
 /**
  * @swagger
  * /lists:
@@ -132,8 +133,8 @@ router.get('/:listId', authenticateUser, getUserListById);
  *       500:
  *         description: Erro ao criar lista
  */
-router.post('/', authenticateUser, createUserList);
 
+router.put('/:listId', authenticateUser, updateUserList);
 /**
  * @swagger
  * /lists/{listId}:
@@ -190,8 +191,8 @@ router.post('/', authenticateUser, createUserList);
  *       500:
  *         description: Erro ao atualizar lista
  */
-router.put('/:listId', authenticateUser, updateUserList);
 
+router.delete('/:listId', authenticateUser, deleteUserList);
 /**
  * @swagger
  * /lists/{listId}:
@@ -219,6 +220,5 @@ router.put('/:listId', authenticateUser, updateUserList);
  *       500:
  *         description: Erro ao deletar lista
  */
-router.delete('/:listId', authenticateUser, deleteUserList);
 
 export default router;
