@@ -1,4 +1,6 @@
-import database from '../config/db.js';
+import { Op } from 'sequelize';
+import List from '../models/list.js';
+import UserLists from '../models/usersLists.js';
 
 export async function getUserLists(req, res) {
     if (!req.user) {
@@ -6,15 +8,25 @@ export async function getUserLists(req, res) {
     }
 
     try {
-        const [userLists] = await database.query(
-            `SELECT * FROM tbLists 
-             WHERE user_id = ? OR FIND_IN_SET(?, collaborators_emails) > 0`,
-            [req.user.id, req.user.email],
-        );
+        const userLists = await List.findAll({
+            where: {
+                userId: req.user.id,
+                [Op.or]: [
+                    {
+                        collaboratorsEmails: {
+                            [Op.like]: `%${req.user.email}%`,
+                        },
+                    },
+                ],
+            },
+        });
 
         res.json(userLists);
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar listas.' });
+        res.status(500).json({
+            error: 'Erro ao buscar listas.',
+            details: error.message,
+        });
     }
 }
 
@@ -26,20 +38,29 @@ export async function getUserListById(req, res) {
     }
 
     try {
-        const [listData] = await database.query(
-            `SELECT * FROM tbLists 
-             WHERE id = ? AND (user_id = ? OR FIND_IN_SET(?, collaborators_emails) > 0)`,
-            [listId, req.user.id, req.user.email],
-        );
+        const userList = await List.findOne({
+            where: {
+                id: listId,
+                [Op.or]: [
+                    { user_id: req.user.id },
+                    {
+                        collaboratorsEmails: {
+                            [Op.like]: `%${req.user.email}%`,
+                        },
+                    },
+                ],
+            },
+        });
 
-        if (listData.length === 0) {
+        if (!userList) {
             return res.status(404).json({ error: 'Lista não encontrada' });
         }
 
-        res.json(listData[0]);
+        res.json(userList);
     } catch (error) {
         res.status(500).json({
             error: `Erro ao buscar a lista ${listId}.`,
+            details: error.message,
         });
     }
 }
@@ -52,41 +73,45 @@ export async function createUserList(req, res) {
     }
 
     try {
-        const [insertResult] = await database.query(
-            'INSERT INTO tbLists (title, daily, collaborators_emails, user_id) VALUES (?, ?, ?, ?)',
-            [title, daily, collaboratorsEmails, req.user.id],
-        );
-
-        res.status(201).json({
-            id: insertResult.insertId,
+        const newList = await List.create({
             title,
             daily,
             collaboratorsEmails,
+            userId: req.user.id,
+        });
+
+        res.status(201).json({
+            id: newList.id,
+            title: newList.title,
+            daily: newList.daily,
+            collaboratorsEmails: newList.collaboratorsEmails,
         });
     } catch (error) {
-        res.status(500).json({ error: 'Erro ao criar lista.' });
+        res.status(500).json({
+            error: 'Erro ao criar lista.',
+            details: error.message,
+        });
     }
 }
 
 export async function updateUserList(req, res) {
     const { listId } = req.params;
-    const { title, fixed, daily, collaboratorsEmails = '' } = req.body;
+    const { title, fixed, collaboratorsEmails = '' } = req.body;
 
     if (!req.user) {
         return res.status(401).json({ error: 'Usuário não autenticado.' });
     }
 
     try {
-        const [existingList] = await database.query(
-            'SELECT * FROM tbLists WHERE id = ?',
-            [listId],
-        );
+        const list = await List.findOne({ where: { id: listId } });
 
-        if (existingList.length === 0) {
-            return res.status(404).json({ error: 'Lista não encontrada.' });
+        if (!list) {
+            return res.status(404).json({
+                error: `Lista com ID ${listId} não encontrada.`,
+            });
         }
 
-        const listDetails = existingList[0];
+        const listDetails = list;
         const isOwner = listDetails.user_id === req.user.id;
         const isCollaborator = listDetails.collaborators_emails
             ?.split(',')
@@ -94,21 +119,15 @@ export async function updateUserList(req, res) {
             .includes(req.user.email);
 
         if (isOwner) {
-            const updatedList = {
-                title: title || listDetails.title,
-                daily: daily !== undefined ? daily : listDetails.daily,
-                collaboratorsEmails: collaboratorsEmails || '',
-            };
-
-            await database.query(
-                'UPDATE tbLists SET title = ?, daily = ?, collaborators_emails = ? WHERE id = ?',
-                [
-                    updatedList.title,
-                    updatedList.daily,
-                    updatedList.collaboratorsEmails,
-                    listId,
-                ],
+            await List.update(
+                {
+                    title: title ?? list.title,
+                    collaborators_emails: collaboratorsEmails,
+                },
+                { where: { id: listId } },
             );
+
+            const updatedList = await List.findOne({ where: { id: listId } });
 
             return res.json({
                 message: `A lista '${updatedList.title}' foi atualizada com sucesso.`,
@@ -117,20 +136,20 @@ export async function updateUserList(req, res) {
         }
 
         if (isCollaborator && fixed !== undefined) {
-            const [existingUserList] = await database.query(
-                'SELECT * FROM tbUserLists WHERE user_id = ? AND list_id = ?',
-                [req.user.id, listId],
-            );
+            const userListAssociation = await UserLists.findOne({
+                where: { userId: req.user.id, listId: listId },
+            });
 
-            if (existingUserList.length === 0) {
-                await database.query(
-                    'INSERT INTO tbUserLists (user_id, list_id, fixed) VALUES (?, ?, ?)',
-                    [req.user.id, listId, fixed],
-                );
+            if (!userListAssociation) {
+                await UserLists.create({
+                    userId: req.user.id,
+                    listId: listId,
+                    fixed: fixed,
+                });
             } else {
-                await database.query(
-                    'UPDATE tbUserLists SET fixed = ? WHERE user_id = ? AND list_id = ?',
-                    [fixed, req.user.id, listId],
+                await UserLists.update(
+                    { fixed: fixed },
+                    { where: { listId: listId, userId: req.user.id } },
                 );
             }
 
@@ -143,6 +162,7 @@ export async function updateUserList(req, res) {
     } catch (error) {
         res.status(500).json({
             error: `Erro ao atualizar a lista ${title || `ID: ${listId}`}.`,
+            details: error.message,
         });
     }
 }
@@ -151,21 +171,18 @@ export async function deleteUserList(req, res) {
     const { listId } = req.params;
 
     try {
-        const [listData] = await database.query(
-            'SELECT * FROM tbLists WHERE id = ?',
-            [listId],
-        );
+        const list = await List.findOne({ where: { id: listId } });
 
-        if (listData.length === 0) {
-            return res.status(404).json({ error: 'Lista não encontrada.' });
+        if (!list) {
+            return res.status(404).json({
+                error: `Lista com ID ${listId} não encontrada.`,
+            });
         }
 
-        const listTitle = listData[0].title;
-        const listOwnerId = listData[0].user_id;
-        const collaboratorsEmails = listData[0].collaborators_emails
-            ? listData[0].collaborators_emails
-                  .split(',')
-                  .map((email) => email.trim())
+        const listTitle = list.title;
+        const listOwnerId = list.id;
+        const collaboratorsEmails = list.collaboratorsEmails
+            ? list.collaboratorsEmails.split(',').map((email) => email.trim())
             : [];
 
         const isOwner = req.user && req.user.id === listOwnerId;
@@ -173,7 +190,8 @@ export async function deleteUserList(req, res) {
             req.user && collaboratorsEmails.includes(req.user.email);
 
         if (isOwner) {
-            await database.query('DELETE FROM tbLists WHERE id = ?', [listId]);
+            await List.destroy({ where: { id: listId } });
+
             return res.status(200).json({
                 message: `Lista ${listTitle} deletada com sucesso.`,
             });
@@ -184,9 +202,9 @@ export async function deleteUserList(req, res) {
                 .filter((email) => email !== req.user.email)
                 .join(',');
 
-            await database.query(
-                'UPDATE tbLists SET collaborators_emails = ? WHERE id = ?',
-                [updatedCollaborators, listId],
+            await List.update(
+                { collaboratorsEmails: updatedCollaborators },
+                { where: { id: listId } },
             );
 
             return res.status(200).json({
@@ -198,6 +216,7 @@ export async function deleteUserList(req, res) {
     } catch (error) {
         res.status(500).json({
             error: `Erro ao deletar a lista ${listTitle}.`,
+            details: error.message,
         });
     }
 }

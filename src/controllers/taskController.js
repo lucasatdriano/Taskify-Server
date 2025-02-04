@@ -1,18 +1,17 @@
-import database from '../config/db.js';
+import List from '../models/list.js';
+import Task from '../models/task.js';
 
 export async function getTasksByList(req, res) {
     const { listId } = req.params;
 
     try {
-        const [tasks] = await database.query(
-            'SELECT * FROM tbTasks WHERE list_id = ?',
-            [listId],
-        );
+        const tasks = await Task.findAll({ where: { listId: listId } });
 
         res.json(tasks);
     } catch (error) {
         res.status(500).json({
             error: `Erro ao buscar tarefas na lista ${listId}.`,
+            details: error.message,
         });
     }
 }
@@ -25,19 +24,19 @@ export async function getTaskById(req, res) {
     }
 
     try {
-        const [task] = await database.query(
-            'SELECT * FROM tbTasks WHERE list_id = ? AND id = ?',
-            [listId, taskId],
-        );
+        const task = await Task.findOne({
+            where: { id: taskId, listId: listId },
+        });
 
-        if (task.length === 0) {
+        if (!task) {
             return res.status(404).json({ error: 'Tarefa não encontrada' });
         }
 
-        res.json(task[0]);
+        res.json(task);
     } catch (error) {
         res.status(500).json({
             error: `Erro ao buscar a tarefa com ID ${taskId}.`,
+            details: error.message,
         });
     }
 }
@@ -55,35 +54,17 @@ export async function createTask(req, res) {
     } = req.body;
 
     try {
-        const [list] = await database.query(
-            'SELECT * FROM tbLists WHERE id = ?',
-            [listId],
-        );
+        const list = await List.findOne({ where: { id: listId } });
 
-        if (list.length === 0) {
+        if (!list) {
             return res.status(404).json({
                 error: `Lista com ID ${listId} não encontrada.`,
             });
         }
 
-        const listTitle = list[0].title;
+        const listTitle = list.title;
 
-        const [result] = await database.query(
-            'INSERT INTO tbTasks (title, description, priority, completed, due_date, notification, file, list_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [
-                title,
-                description,
-                priority,
-                completed,
-                dueDate,
-                notification,
-                file,
-                listId,
-            ],
-        );
-
-        res.status(201).json({
-            id: result.insertId,
+        const newTask = await Task.create({
             title,
             description,
             priority,
@@ -93,11 +74,24 @@ export async function createTask(req, res) {
             file,
             listId,
         });
+
+        res.status(201).json({
+            id: newTask.id,
+            title: newTask.title,
+            description: newTask.description,
+            priority: newTask.priority,
+            completed: newTask.completed,
+            dueDate: newTask.dueDate,
+            notification: newTask.notification,
+            file: newTask.file,
+            listId: newTask.listId,
+        });
     } catch (error) {
         res.status(500).json({
             error: `Erro ao criar tarefa na lista ${
                 listTitle || `ID: ${listId}`
             }.`,
+            details: error.message,
         });
     }
 }
@@ -115,47 +109,40 @@ export async function updateTask(req, res) {
     } = req.body;
 
     try {
-        const [task] = await database.query(
-            'SELECT * FROM tbTasks WHERE list_id = ? AND id = ?',
-            [listId, taskId],
-        );
+        const task = await Task.findOne({
+            where: { id: taskId, listId: listId },
+        });
 
-        if (task.length === 0) {
+        if (!task) {
             return res.status(404).json({ error: 'Tarefa não encontrada.' });
         }
 
-        const updatedTask = {
-            title: title || task[0].title,
-            description: description || task[0].description,
-            priority: priority || task[0].priority,
-            completed: completed !== undefined ? completed : task[0].completed,
-            dueDate: dueDate || task[0].due_date,
+        const updatedTask = await Task.update({
+            title: title || task.title,
+            description: description || task.description,
+            priority: priority || task.priority,
+            completed: completed !== undefined ? completed : task.completed,
+            dueDate: dueDate || task.dueDate,
             notification:
-                notification !== undefined
-                    ? notification
-                    : task[0].notification,
-            file: file || task[0].file,
-        };
+                notification !== undefined ? notification : task.notification,
+            file: file || task.file,
+        });
 
-        await database.query(
-            'UPDATE tbTasks SET title = ?, description = ?, priority = ?, completed = ?, due_date = ?, notification = ?, file = ? WHERE list_id = ? AND id = ?',
-            [
-                updatedTask.title,
-                updatedTask.description,
-                updatedTask.priority,
-                updatedTask.completed,
-                updatedTask.dueDate,
-                updatedTask.notification,
-                updatedTask.file,
-                listId,
-                taskId,
-            ],
-        );
-
-        res.status(200).json(updatedTask);
+        res.status(200).json({
+            id: updatedTask.id,
+            title: updatedTask.title,
+            description: updatedTask.description,
+            priority: updatedTask.priority,
+            completed: updatedTask.completed,
+            dueDate: updatedTask.dueDate,
+            notification: updatedTask.notification,
+            file: updatedTask.file,
+            listId: updatedTask.listId,
+        });
     } catch (error) {
         res.status(500).json({
             error: 'Erro ao atualizar tarefa.',
+            details: error.message,
         });
     }
 }
@@ -164,23 +151,19 @@ export async function deleteTask(req, res) {
     const { listId, taskId } = req.params;
 
     try {
-        const [task] = await database.query(
-            'SELECT * FROM tbTasks WHERE list_id = ? AND id = ?',
-            [listId, taskId],
-        );
+        const task = await Task.findOne({
+            where: { id: taskId, listId: listId },
+        });
 
-        if (task.length === 0) {
+        if (!task) {
             return res.status(404).json({
                 error: 'Tarefa não encontrada.',
             });
         }
 
-        const taskTitle = task[0].title;
+        const taskTitle = task.title;
 
-        await database.query(
-            'DELETE FROM tbTasks WHERE list_id = ? AND id = ?',
-            [listId, taskId],
-        );
+        await Task.destroy({ where: { id: taskId, listId: listId } });
 
         res.status(200).json({
             message: `Tarefa ${taskTitle} deletada com sucesso.`,
@@ -188,6 +171,7 @@ export async function deleteTask(req, res) {
     } catch (error) {
         res.status(500).json({
             error: `Erro ao deletar tarefa ${taskTitle || `ID: ${taskId}`}.`,
+            details: error.message,
         });
     }
 }
