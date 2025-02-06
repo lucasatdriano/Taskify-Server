@@ -44,11 +44,11 @@ router.post('/forgotPassword', forgotPassword);
  *        description: Erro ao enviar e-mail
  */
 
-router.post('/resetPassword', resetPassword);
+router.put('/resetPassword', resetPassword);
 /**
  * @swagger
  * /auth/resetPassword:
- *  post:
+ *  put:
  *    summary: Redefinir senha
  *    description: Permite ao usuário redefinir sua senha usando um token válido.
  *    tags: [Auth]
