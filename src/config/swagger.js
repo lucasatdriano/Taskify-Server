@@ -32,6 +32,7 @@ const options = {
         },
     },
     apis: [
+        path.join(__dirname, '../routes/authRoutes.js'),
         path.join(__dirname, '../routes/listRoutes.js'),
         path.join(__dirname, '../routes/taskRoutes.js'),
         path.join(__dirname, '../routes/userRoutes.js'),

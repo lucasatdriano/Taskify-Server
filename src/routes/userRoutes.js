@@ -3,9 +3,7 @@ import {
     registerUser,
     Login,
     getUserById,
-    updateUserName,
-    updateUserPassword,
-    refreshUserToken,
+    updateUser,
     logoutUser,
 } from '../controllers/userController.js';
 
@@ -119,7 +117,7 @@ router.get('/:userId', getUserById);
  *         description: Erro ao buscar usuário
  */
 
-router.put('/:userId/name', updateUserName);
+router.put('/:userId/user', updateUser);
 /**
  * @swagger
  * /users/{userId}/name:
@@ -154,80 +152,6 @@ router.put('/:userId/name', updateUserName);
  *         description: Usuário não encontrado
  *       500:
  *         description: Erro ao atualizar nome
- */
-
-router.put('/:userId/password', updateUserPassword);
-/**
- * @swagger
- * /users/{userId}/password:
- *   put:
- *     summary: Atualiza a senha de um usuário
- *     description: Altera a senha do usuário com base no ID fornecido.
- *     tags: [User]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         description: ID do usuário
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               currentPassword:
- *                 type: string
- *               newPassword:
- *                 type: string
- *             required:
- *               - currentPassword
- *               - newPassword
- *     responses:
- *       200:
- *         description: Senha atualizada com sucesso
- *       401:
- *         description: Senha atual incorreta
- *       404:
- *         description: Usuário não encontrado
- *       500:
- *         description: Erro ao atualizar a senha
- */
-
-router.post('/refreshToken', refreshUserToken);
-/**
- * @swagger
- * /users/refreshToken:
- *   post:
- *     summary: Atualiza o accessToken usando um refreshToken válido
- *     description: Gera um novo accessToken usando o refreshToken fornecido.
- *     tags: [User]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               refreshToken:
- *                 type: string
- *             required:
- *               - refreshToken
- *     responses:
- *       200:
- *         description: Novo accessToken gerado com sucesso
- *       401:
- *         description: Refresh token não fornecido ou inválido
- *       403:
- *         description: Refresh token não encontrado no banco de dados
- *       500:
- *         description: Erro ao gerar novo token
  */
 
 router.post('/:userId/logout', logoutUser);

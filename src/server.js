@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 import { setupSwagger } from './config/swagger.js';
 import sequelize from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
 import listRoutes from './routes/listRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(cors());
 dotenv.config();
 
+app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/lists', listRoutes);
 app.use('/tasks', taskRoutes);

@@ -94,7 +94,7 @@ export async function getUserById(req, res) {
     }
 }
 
-export async function updateUserName(req, res) {
+export async function updateUser(req, res) {
     const { userId } = req.params;
     const { newName } = req.body;
 
@@ -112,96 +112,6 @@ export async function updateUserName(req, res) {
     } catch (error) {
         res.status(500).json({
             error: 'Erro ao atualizar o nome do usuário.',
-            details: error.message,
-        });
-    }
-}
-
-export async function updateUserPassword(req, res) {
-    const { userId } = req.params;
-    const { currentPassword, newPassword } = req.body;
-
-    try {
-        const user = await User.findOne({ where: { id: userId } });
-
-        if (!user) {
-            return res.status(404).json({ error: 'Usuário não encontrado.' });
-        }
-
-        const isPasswordCorrect = await bcrypt.compare(
-            currentPassword,
-            user.password,
-        );
-
-        if (!isPasswordCorrect) {
-            return res.status(401).json({ error: 'Senha atual incorreta!' });
-        }
-
-        let hashedPassword;
-        try {
-            hashedPassword = await bcrypt.hash(newPassword, 10);
-        } catch (hashError) {
-            return res
-                .status(500)
-                .json({ error: 'Erro ao processar a nova senha.' });
-        }
-
-        const updatedUserPassword = await User.update(
-            { password: hashedPassword },
-            { where: { id: userId } },
-        );
-
-        if (updatedUserPassword === 0) {
-            return res.status(400).json({ error: 'A senha não foi alterada.' });
-        }
-
-        res.json({ message: 'Senha atualizada com sucesso!' });
-    } catch (error) {
-        res.status(500).json({
-            error: 'Erro ao atualizar a senha do usuário.',
-            details: error.message,
-        });
-    }
-}
-
-export async function refreshUserToken(req, res) {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken)
-        return res.status(401).json({ error: 'Refresh token não fornecido' });
-
-    try {
-        const secret = process.env.JWT_SECRET;
-        if (!secret) throw new Error('JWT_SECCRET não definido');
-
-        jwt.verify(refreshToken, secret, async (err, decoded) => {
-            if (err) {
-                return res
-                    .status(403)
-                    .json({ error: 'Refresh token inválido' });
-            }
-
-            const user = await User.findOne({
-                where: { id: decoded.id, refreshToken: refreshToken },
-            });
-
-            if (!user) {
-                return res.status(403).json({
-                    error: 'Refresh token não encontrado no banco de dados',
-                });
-            }
-
-            const accessToken = jwt.sign(
-                { id: decoded.id, email: decoded.email },
-                secret,
-                { expiresIn: '1h' },
-            );
-
-            res.json({ accessToken });
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: 'Erro ao gerar novo token',
             details: error.message,
         });
     }
