@@ -83,7 +83,7 @@ router.put('/resetPassword', resetPassword);
 router.post('/refreshToken', refreshUserToken);
 /**
  * @swagger
- * /users/refreshToken:
+ * /auth/refreshToken:
  *   post:
  *     summary: Atualiza o accessToken usando um refreshToken válido
  *     description: Gera um novo accessToken usando o refreshToken fornecido.
