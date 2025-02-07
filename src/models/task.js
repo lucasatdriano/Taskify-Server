@@ -1,13 +1,14 @@
 import { DataTypes } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 import sequelize from '../config/db.js';
 
 const Task = sequelize.define(
     'tbTasks',
     {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             primaryKey: true,
-            autoIncrement: true,
+            defaultValue: uuidv4,
         },
         title: {
             type: DataTypes.STRING,
@@ -46,7 +47,7 @@ const Task = sequelize.define(
             defaultValue: null,
         },
         listId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'tbLists',

@@ -6,7 +6,7 @@ import {
     updateUserList,
     deleteUserList,
 } from '../controllers/listController.js';
-import { authenticateUser } from '../middleware/authMiddleware.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 /**
@@ -16,7 +16,7 @@ const router = express.Router();
  *   description: Gerenciamento de listas de cada usuário
  */
 
-router.get('/', authenticateUser, getUserLists);
+router.get('/', authMiddleware, getUserLists);
 /**
  * @swagger
  * /lists:
@@ -49,7 +49,7 @@ router.get('/', authenticateUser, getUserLists);
  *         description: Erro ao buscar as listas
  */
 
-router.get('/:listId', authenticateUser, getUserListById);
+router.get('/:listId', authMiddleware, getUserListById);
 /**
  * @swagger
  * /lists/{listId}:
@@ -89,7 +89,7 @@ router.get('/:listId', authenticateUser, getUserListById);
  *         description: Erro ao buscar a lista
  */
 
-router.post('/', authenticateUser, createUserList);
+router.post('/', authMiddleware, createUserList);
 /**
  * @swagger
  * /lists:
@@ -134,7 +134,7 @@ router.post('/', authenticateUser, createUserList);
  *         description: Erro ao criar lista
  */
 
-router.put('/:listId', authenticateUser, updateUserList);
+router.put('/:listId', authMiddleware, updateUserList);
 /**
  * @swagger
  * /lists/{listId}:
@@ -192,7 +192,7 @@ router.put('/:listId', authenticateUser, updateUserList);
  *         description: Erro ao atualizar lista
  */
 
-router.delete('/:listId', authenticateUser, deleteUserList);
+router.delete('/:listId', authMiddleware, deleteUserList);
 /**
  * @swagger
  * /lists/{listId}:

@@ -1,16 +1,17 @@
 import { DataTypes } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 import sequelize from '../config/db.js';
 
 const UserLists = sequelize.define(
     'tbUserLists',
     {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             primaryKey: true,
-            autoIncrement: true,
+            defaultValue: uuidv4,
         },
         userId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'tbUsers',
@@ -19,7 +20,7 @@ const UserLists = sequelize.define(
             onDelete: 'CASCADE',
         },
         listId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'tbLists',

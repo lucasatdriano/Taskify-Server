@@ -10,8 +10,8 @@ export async function getUserLists(req, res) {
     try {
         const userLists = await List.findAll({
             where: {
-                userId: req.user.id,
                 [Op.or]: [
+                    { userId: req.user.id },
                     {
                         collaboratorsEmails: {
                             [Op.like]: `%${req.user.email}%`,
@@ -112,7 +112,7 @@ export async function updateUserList(req, res) {
         }
 
         const listDetails = list;
-        const isOwner = listDetails.user_id === req.user.id;
+        const isOwner = listDetails.userId === req.user.id;
         const isCollaborator = listDetails.collaborators_emails
             ?.split(',')
             .map((email) => email.trim())
@@ -180,7 +180,7 @@ export async function deleteUserList(req, res) {
         }
 
         const listTitle = list.title;
-        const listOwnerId = list.id;
+        const listOwnerId = list.userId;
         const collaboratorsEmails = list.collaboratorsEmails
             ? list.collaboratorsEmails.split(',').map((email) => email.trim())
             : [];

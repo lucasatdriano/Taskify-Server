@@ -1,10 +1,11 @@
 import { DataTypes } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 import sequelize from '../config/db.js';
 
 const List = sequelize.define(
     'TbLists',
     {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: uuidv4 },
         title: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -23,7 +24,7 @@ const List = sequelize.define(
             allowNull: true,
         },
         userId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
             references: {
                 model: 'tbUsers',

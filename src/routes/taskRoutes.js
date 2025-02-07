@@ -6,7 +6,7 @@ import {
     updateTask,
     deleteTask,
 } from '../controllers/taskController.js';
-import { authenticateUser } from '../middleware/authMiddleware.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 /**
@@ -16,7 +16,7 @@ const router = express.Router();
  *   description: Gerenciamento de tarefas dentro de listas
  */
 
-router.get('/:listId', authenticateUser, getTasksByList);
+router.get('/:listId', authMiddleware, getTasksByList);
 /**
  * @swagger
  * /tasks/{listId}:
@@ -39,7 +39,7 @@ router.get('/:listId', authenticateUser, getTasksByList);
  *         description: Erro ao buscar tarefas
  */
 
-router.get('/:listId/:taskId', authenticateUser, getTaskById);
+router.get('/:listId/:taskId', authMiddleware, getTaskById);
 /**
  * @swagger
  * /tasks/{listId}/{taskId}:
@@ -70,7 +70,7 @@ router.get('/:listId/:taskId', authenticateUser, getTaskById);
  *         description: Erro ao buscar a tarefa
  */
 
-router.post('/:listId', authenticateUser, createTask);
+router.post('/:listId', authMiddleware, createTask);
 /**
  * @swagger
  * /tasks/{listId}:
@@ -118,7 +118,7 @@ router.post('/:listId', authenticateUser, createTask);
  *         description: Erro ao criar a tarefa
  */
 
-router.put('/:listId/:taskId', authenticateUser, updateTask);
+router.put('/:listId/:taskId', authMiddleware, updateTask);
 /**
  * @swagger
  * /tasks/{listId}/{taskId}:
@@ -172,7 +172,7 @@ router.put('/:listId/:taskId', authenticateUser, updateTask);
  *         description: Erro ao atualizar a tarefa
  */
 
-router.delete('/:listId/:taskId', authenticateUser, deleteTask);
+router.delete('/:listId/:taskId', authMiddleware, deleteTask);
 /**
  * @swagger
  * /tasks/{listId}/{taskId}:

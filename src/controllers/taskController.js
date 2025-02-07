@@ -117,27 +117,24 @@ export async function updateTask(req, res) {
             return res.status(404).json({ error: 'Tarefa não encontrada.' });
         }
 
-        const updatedTask = await Task.update({
-            title: title || task.title,
-            description: description || task.description,
-            priority: priority || task.priority,
-            completed: completed !== undefined ? completed : task.completed,
-            dueDate: dueDate || task.dueDate,
-            notification:
-                notification !== undefined ? notification : task.notification,
-            file: file || task.file,
-        });
+        const updatedTask = await Task.update(
+            {
+                title: title || task.title,
+                description: description || task.description,
+                priority: priority || task.priority,
+                completed: completed !== undefined ? completed : task.completed,
+                dueDate: dueDate || task.dueDate,
+                notification:
+                    notification !== undefined
+                        ? notification
+                        : task.notification,
+                file: file || task.file,
+            },
+            { where: { id: taskId, listId: listId } },
+        );
 
         res.status(200).json({
-            id: updatedTask.id,
-            title: updatedTask.title,
-            description: updatedTask.description,
-            priority: updatedTask.priority,
-            completed: updatedTask.completed,
-            dueDate: updatedTask.dueDate,
-            notification: updatedTask.notification,
-            file: updatedTask.file,
-            listId: updatedTask.listId,
+            updatedTask,
         });
     } catch (error) {
         res.status(500).json({

@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function registerUser(req, res) {
     const { name, email, password } = req.body;
@@ -16,6 +17,7 @@ export async function registerUser(req, res) {
         }
 
         const newUser = await User.create({
+            id: uuidv4(),
             name,
             email,
             password: hashedPassword,
@@ -67,7 +69,7 @@ export async function Login(req, res) {
         user.refreshToken = refreshToken;
         await user.save();
 
-        res.json({ accessToken, refreshToken });
+        res.json({ user, accessToken, refreshToken });
     } catch (error) {
         res.status(500).json({
             error: 'Erro ao fazer login.',
@@ -104,7 +106,7 @@ export async function updateUser(req, res) {
             { where: { id: userId } },
         );
 
-        if (updatedUser === 0) {
+        if (updatedUser[0] === 0) {
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }
 
