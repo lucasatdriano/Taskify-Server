@@ -3,7 +3,7 @@ import List from '../models/list.js';
 import UserLists from '../models/usersLists.js';
 
 export async function getUserLists(req, res) {
-    if (!req.user) {
+    if (!req.authenticatedUser) {
         return res.status(401).json({ error: 'Usuário não autenticado.' });
     }
 
@@ -11,10 +11,10 @@ export async function getUserLists(req, res) {
         const userLists = await List.findAll({
             where: {
                 [Op.or]: [
-                    { userId: req.user.id },
+                    { userId: req.authenticatedUser.id },
                     {
                         collaboratorsEmails: {
-                            [Op.like]: `%${req.user.email}%`,
+                            [Op.like]: `%${req.authenticatedUser.email}%`,
                         },
                     },
                 ],
@@ -33,7 +33,7 @@ export async function getUserLists(req, res) {
 export async function getUserListById(req, res) {
     const { listId } = req.params;
 
-    if (!req.user) {
+    if (!req.authenticatedUser) {
         return res.status(401).json({ error: 'Usuário não autenticado.' });
     }
 
@@ -42,10 +42,10 @@ export async function getUserListById(req, res) {
             where: {
                 id: listId,
                 [Op.or]: [
-                    { user_id: req.user.id },
+                    { user_id: req.authenticatedUser.id },
                     {
                         collaboratorsEmails: {
-                            [Op.like]: `%${req.user.email}%`,
+                            [Op.like]: `%${req.authenticatedUser.email}%`,
                         },
                     },
                 ],
@@ -68,7 +68,7 @@ export async function getUserListById(req, res) {
 export async function createUserList(req, res) {
     const { title, daily, collaboratorsEmails = '' } = req.body;
 
-    if (!req.user) {
+    if (!req.authenticatedUser) {
         return res.status(401).json({ error: 'Usuário não autenticado.' });
     }
 
@@ -77,7 +77,7 @@ export async function createUserList(req, res) {
             title,
             daily,
             collaboratorsEmails,
-            userId: req.user.id,
+            userId: req.authenticatedUser.id,
         });
 
         res.status(201).json({
@@ -98,7 +98,7 @@ export async function updateUserList(req, res) {
     const { listId } = req.params;
     const { title, fixed, collaboratorsEmails = '' } = req.body;
 
-    if (!req.user) {
+    if (!req.authenticatedUser) {
         return res.status(401).json({ error: 'Usuário não autenticado.' });
     }
 
@@ -112,11 +112,11 @@ export async function updateUserList(req, res) {
         }
 
         const listDetails = list;
-        const isOwner = listDetails.userId === req.user.id;
+        const isOwner = listDetails.userId === req.authenticatedUser.id;
         const isCollaborator = listDetails.collaborators_emails
             ?.split(',')
             .map((email) => email.trim())
-            .includes(req.user.email);
+            .includes(req.authenticatedUser.email);
 
         if (isOwner) {
             await List.update(
@@ -137,19 +137,24 @@ export async function updateUserList(req, res) {
 
         if (isCollaborator && fixed !== undefined) {
             const userListAssociation = await UserLists.findOne({
-                where: { userId: req.user.id, listId: listId },
+                where: { userId: req.authenticatedUser.id, listId: listId },
             });
 
             if (!userListAssociation) {
                 await UserLists.create({
-                    userId: req.user.id,
+                    userId: req.authenticatedUser.id,
                     listId: listId,
                     fixed: fixed,
                 });
             } else {
                 await UserLists.update(
                     { fixed: fixed },
-                    { where: { listId: listId, userId: req.user.id } },
+                    {
+                        where: {
+                            listId: listId,
+                            userId: req.authenticatedUser.id,
+                        },
+                    },
                 );
             }
 
@@ -185,9 +190,11 @@ export async function deleteUserList(req, res) {
             ? list.collaboratorsEmails.split(',').map((email) => email.trim())
             : [];
 
-        const isOwner = req.user && req.user.id === listOwnerId;
+        const isOwner =
+            req.authenticatedUser && req.authenticatedUser.id === listOwnerId;
         const isCollaborator =
-            req.user && collaboratorsEmails.includes(req.user.email);
+            req.authenticatedUser &&
+            collaboratorsEmails.includes(req.authenticatedUser.email);
 
         if (isOwner) {
             await List.destroy({ where: { id: listId } });
@@ -199,7 +206,7 @@ export async function deleteUserList(req, res) {
 
         if (isCollaborator) {
             const updatedCollaborators = collaboratorsEmails
-                .filter((email) => email !== req.user.email)
+                .filter((email) => email !== req.authenticatedUser.email)
                 .join(',');
 
             await List.update(

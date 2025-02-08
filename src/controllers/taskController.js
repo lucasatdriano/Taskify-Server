@@ -19,7 +19,7 @@ export async function getTasksByList(req, res) {
 export async function getTaskById(req, res) {
     const { listId, taskId } = req.params;
 
-    if (!req.user) {
+    if (!req.authenticatedUser) {
         return res.status(401).json({ error: 'Usuário não autenticado.' });
     }
 

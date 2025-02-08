@@ -81,8 +81,8 @@ router.post('/login', Login);
  *             schema:
  *               type: object
  *               properties:
- *                 user:
- *                   type: object
+ *                 id:
+ *                   type: string
  *                 accessToken:
  *                   type: string
  *                 refreshToken:

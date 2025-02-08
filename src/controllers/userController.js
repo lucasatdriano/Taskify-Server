@@ -54,6 +54,7 @@ export async function Login(req, res) {
             return res.status(401).json({ error: 'Senha incorreta!' });
         }
 
+        const id = user.id;
         const accessToken = jwt.sign(
             { id: user.id, email: user.email },
             secret,
@@ -69,7 +70,7 @@ export async function Login(req, res) {
         user.refreshToken = refreshToken;
         await user.save();
 
-        res.json({ user.id, accessToken, refreshToken });
+        res.json({ id, accessToken, refreshToken });
     } catch (error) {
         res.status(500).json({
             error: 'Erro ao fazer login.',
