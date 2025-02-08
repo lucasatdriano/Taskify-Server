@@ -1,10 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 export function authMiddleware(req, res, next) {
-    console.log('Cabeçalho Authorization:', req.header('Authorization'));
-
     const jwtToken = req.header('Authorization')?.replace('Bearer ', '');
-    console.log('Token recebido:', jwtToken);
 
     if (!jwtToken) {
         return res
@@ -14,7 +11,7 @@ export function authMiddleware(req, res, next) {
 
     try {
         const decodedData = jwt.verify(jwtToken, process.env.JWT_SECRET);
-        console.log('Token decodificado:', decodedData);
+
         req.authenticatedUser = decodedData;
         next();
     } catch (error) {
