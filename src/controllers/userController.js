@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import User from '../models/user.js';
 import { v4 as uuidv4 } from 'uuid';
+import { models } from '../models/index.js';
 
 export async function registerUser(req, res) {
     const { name, email, password } = req.body;
@@ -16,7 +16,7 @@ export async function registerUser(req, res) {
                 .json({ error: 'Erro ao processar a nova senha.' });
         }
 
-        const newUser = await User.create({
+        const newUser = await models.User.create({
             id: uuidv4(),
             name,
             email,
@@ -43,7 +43,7 @@ export async function Login(req, res) {
         const secret = process.env.JWT_SECRET;
         if (!secret) throw new Error('JWT_SECRET não definido');
 
-        const user = await User.findOne({ where: { email } });
+        const user = await models.User.findOne({ where: { email } });
 
         if (!user) {
             return res.status(401).json({ error: 'Usuário não encontrado!' });
@@ -83,7 +83,7 @@ export async function getUserById(req, res) {
     const { userId } = req.params;
 
     try {
-        const user = await User.findByPk(userId, {
+        const user = await models.User.findByPk(userId, {
             attributes: ['id', 'name', 'email'],
         });
 
@@ -102,7 +102,7 @@ export async function updateUser(req, res) {
     const { newName } = req.body;
 
     try {
-        const updatedUser = await User.update(
+        const updatedUser = await models.User.update(
             { name: newName },
             { where: { id: userId } },
         );
@@ -124,7 +124,10 @@ export async function logoutUser(req, res) {
     const { userId } = req.body;
 
     try {
-        await User.update({ refreshToken: null }, { where: { id: userId } });
+        await models.User.update(
+            { refreshToken: null },
+            { where: { id: userId } },
+        );
 
         res.json({ message: 'Usuário deslogado com sucesso' });
     } catch (error) {

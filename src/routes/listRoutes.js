@@ -43,6 +43,8 @@ router.get('/', authMiddleware, getUserLists);
  *                     type: boolean
  *                   collaboratorsEmails:
  *                     type: string
+ *                   fixed:
+ *                     type: boolean
  *       401:
  *         description: Usuário não autenticado
  *       500:
@@ -81,6 +83,8 @@ router.get('/:listId', authMiddleware, getUserListById);
  *                   type: boolean
  *                 collaboratorsEmails:
  *                   type: string
+ *                 fixed:
+ *                   type: boolean
  *       401:
  *         description: Usuário não autenticado
  *       404:
@@ -112,6 +116,8 @@ router.post('/', authMiddleware, createUserList);
  *               collaboratorsEmails:
  *                 type: string
  *                 description: Emails dos colaboradores separados por vírgula
+ *               fixed:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Lista criada com sucesso
@@ -128,6 +134,8 @@ router.post('/', authMiddleware, createUserList);
  *                   type: boolean
  *                 collaboratorsEmails:
  *                   type: string
+ *                 fixed:
+ *                   type: boolean
  *       401:
  *         description: Usuário não autenticado
  *       500:
@@ -161,6 +169,8 @@ router.put('/:listId', authMiddleware, updateUserList);
  *                 type: string
  *               collaboratorsEmails:
  *                 type: string
+ *               fixed:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Lista atualizada com sucesso
@@ -182,6 +192,8 @@ router.put('/:listId', authMiddleware, updateUserList);
  *                       type: boolean
  *                     collaboratorsEmails:
  *                       type: string
+ *                     fixed:
+ *                       type: boolean
  *       401:
  *         description: Usuário não autenticado
  *       404:

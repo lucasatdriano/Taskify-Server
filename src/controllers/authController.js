@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
-import User from '../models/user.js';
+import { models } from '../models/index.js';
 
 export async function forgotPassword(req, res) {
     const { email } = req.body;
     try {
-        const user = await User.findOne({ where: { email: email } });
+        const user = await models.User.findOne({ where: { email: email } });
 
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado' });
@@ -61,7 +61,7 @@ export async function resetPassword(req, res) {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findOne({ where: { id: decoded.id } });
+        const user = await models.User.findOne({ where: { id: decoded.id } });
 
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado.' });
@@ -69,7 +69,7 @@ export async function resetPassword(req, res) {
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
-        await user.save();
+        await models.user.save();
 
         res.json({ message: 'Senha redefinida com sucesso!' });
     } catch (error) {
@@ -92,7 +92,7 @@ export async function refreshUserToken(req, res) {
 
         const decoded = jwt.verify(refreshToken, secret);
 
-        const user = await User.findOne({
+        const user = await models.User.findOne({
             where: { id: decoded.id, refreshToken },
         });
 

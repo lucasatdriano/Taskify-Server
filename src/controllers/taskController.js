@@ -1,11 +1,10 @@
-import List from '../models/list.js';
-import Task from '../models/task.js';
+import { models } from '../models/index.js';
 
 export async function getTasksByList(req, res) {
     const { listId } = req.params;
 
     try {
-        const tasks = await Task.findAll({ where: { listId: listId } });
+        const tasks = await models.Task.findAll({ where: { listId: listId } });
 
         res.json(tasks);
     } catch (error) {
@@ -24,7 +23,7 @@ export async function getTaskById(req, res) {
     }
 
     try {
-        const task = await Task.findOne({
+        const task = await models.Task.findOne({
             where: { id: taskId, listId: listId },
         });
 
@@ -54,7 +53,7 @@ export async function createTask(req, res) {
     } = req.body;
 
     try {
-        const list = await List.findOne({ where: { id: listId } });
+        const list = await models.List.findOne({ where: { id: listId } });
 
         if (!list) {
             return res.status(404).json({
@@ -64,7 +63,7 @@ export async function createTask(req, res) {
 
         const listTitle = list.title;
 
-        const newTask = await Task.create({
+        const newTask = await models.Task.create({
             title,
             description,
             priority,
@@ -109,7 +108,7 @@ export async function updateTask(req, res) {
     } = req.body;
 
     try {
-        const task = await Task.findOne({
+        const task = await models.Task.findOne({
             where: { id: taskId, listId: listId },
         });
 
@@ -117,7 +116,7 @@ export async function updateTask(req, res) {
             return res.status(404).json({ error: 'Tarefa não encontrada.' });
         }
 
-        const updatedTask = await Task.update(
+        const updatedTask = await models.Task.update(
             {
                 title: title || task.title,
                 description: description || task.description,
@@ -148,7 +147,7 @@ export async function deleteTask(req, res) {
     const { listId, taskId } = req.params;
 
     try {
-        const task = await Task.findOne({
+        const task = await models.Task.findOne({
             where: { id: taskId, listId: listId },
         });
 
@@ -160,7 +159,7 @@ export async function deleteTask(req, res) {
 
         const taskTitle = task.title;
 
-        await Task.destroy({ where: { id: taskId, listId: listId } });
+        await models.Task.destroy({ where: { id: taskId, listId: listId } });
 
         res.status(200).json({
             message: `Tarefa ${taskTitle} deletada com sucesso.`,

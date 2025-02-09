@@ -1,6 +1,5 @@
 import { Op } from 'sequelize';
-import List from '../models/list.js';
-import UserLists from '../models/usersLists.js';
+import { models } from '../models/index.js';
 
 export async function getUserLists(req, res) {
     if (!req.authenticatedUser) {
@@ -8,21 +7,34 @@ export async function getUserLists(req, res) {
     }
 
     try {
-        const userLists = await List.findAll({
-            where: {
-                [Op.or]: [
-                    { userId: req.authenticatedUser.id },
-                    {
-                        collaboratorsEmails: {
-                            [Op.like]: `%${req.authenticatedUser.email}%`,
-                        },
+        const whereClause = {
+            [Op.or]: [
+                { userId: req.authenticatedUser.id },
+                {
+                    collaboratorsEmails: {
+                        [Op.like]: `%${req.authenticatedUser.email}%`,
                     },
-                ],
-            },
+                },
+            ],
+        };
+
+        const userLists = await models.List.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: models.UserLists,
+                    as: 'UserLists',
+                    where: {
+                        userId: req.authenticatedUser.id,
+                    },
+                    attributes: ['fixed'],
+                },
+            ],
         });
 
         res.json(userLists);
     } catch (error) {
+        console.error('Erro ao buscar listas:', error);
         res.status(500).json({
             error: 'Erro ao buscar listas.',
             details: error.message,
@@ -38,7 +50,7 @@ export async function getUserListById(req, res) {
     }
 
     try {
-        const userList = await List.findOne({
+        const userList = await models.List.findOne({
             where: {
                 id: listId,
                 [Op.or]: [
@@ -49,6 +61,13 @@ export async function getUserListById(req, res) {
                         },
                     },
                 ],
+            },
+            include: {
+                model: models.UserLists,
+                where: {
+                    userId: req.authenticatedUser.id,
+                },
+                attributes: ['fixed'],
             },
         });
 
@@ -66,18 +85,29 @@ export async function getUserListById(req, res) {
 }
 
 export async function createUserList(req, res) {
-    const { title, daily, collaboratorsEmails = '' } = req.body;
+    const {
+        title,
+        daily = false,
+        collaboratorsEmails = '',
+        fixed = false,
+    } = req.body;
 
     if (!req.authenticatedUser) {
         return res.status(401).json({ error: 'Usuário não autenticado.' });
     }
 
     try {
-        const newList = await List.create({
+        const newList = await models.List.create({
             title,
             daily,
             collaboratorsEmails,
             userId: req.authenticatedUser.id,
+        });
+
+        await models.UserLists.create({
+            userId: req.authenticatedUser.id,
+            listId: newList.id,
+            fixed: fixed,
         });
 
         res.status(201).json({
@@ -85,6 +115,7 @@ export async function createUserList(req, res) {
             title: newList.title,
             daily: newList.daily,
             collaboratorsEmails: newList.collaboratorsEmails,
+            fixed: fixed,
         });
     } catch (error) {
         res.status(500).json({
@@ -103,7 +134,7 @@ export async function updateUserList(req, res) {
     }
 
     try {
-        const list = await List.findOne({ where: { id: listId } });
+        const list = await models.List.findOne({ where: { id: listId } });
 
         if (!list) {
             return res.status(404).json({
@@ -111,23 +142,24 @@ export async function updateUserList(req, res) {
             });
         }
 
-        const listDetails = list;
-        const isOwner = listDetails.userId === req.authenticatedUser.id;
-        const isCollaborator = listDetails.collaborators_emails
+        const isOwner = list.userId === req.authenticatedUser.id;
+        const isCollaborator = list.collaboratorsEmails
             ?.split(',')
             .map((email) => email.trim())
             .includes(req.authenticatedUser.email);
 
         if (isOwner) {
-            await List.update(
+            await models.List.update(
                 {
                     title: title ?? list.title,
-                    collaborators_emails: collaboratorsEmails,
+                    collaboratorsEmails: collaboratorsEmails,
                 },
                 { where: { id: listId } },
             );
 
-            const updatedList = await List.findOne({ where: { id: listId } });
+            const updatedList = await models.List.findOne({
+                where: { id: listId },
+            });
 
             return res.json({
                 message: `A lista '${updatedList.title}' foi atualizada com sucesso.`,
@@ -136,33 +168,24 @@ export async function updateUserList(req, res) {
         }
 
         if (isCollaborator && fixed !== undefined) {
-            const userListAssociation = await UserLists.findOne({
-                where: { userId: req.authenticatedUser.id, listId: listId },
-            });
-
-            if (!userListAssociation) {
-                await UserLists.create({
-                    userId: req.authenticatedUser.id,
-                    listId: listId,
-                    fixed: fixed,
+            const [userListAssociation, created] =
+                await models.UserLists.findOrCreate({
+                    where: { userId: req.authenticatedUser.id, listId: listId },
+                    defaults: { fixed: fixed },
                 });
-            } else {
-                await UserLists.update(
-                    { fixed: fixed },
-                    {
-                        where: {
-                            listId: listId,
-                            userId: req.authenticatedUser.id,
-                        },
-                    },
-                );
+
+            if (!created) {
+                await userListAssociation.update({ fixed: fixed });
             }
 
-            return res.json(fixed);
+            return res.json({
+                message: `O atributo 'fixed' foi atualizado para ${fixed}.`,
+                fixed: fixed,
+            });
         }
 
         return res.status(403).json({
-            error: `Você não tem permissão para atualizar a lista ${listDetails.title}.`,
+            error: `Você não tem permissão para atualizar a lista ${list.title}.`,
         });
     } catch (error) {
         res.status(500).json({
@@ -176,7 +199,7 @@ export async function deleteUserList(req, res) {
     const { listId } = req.params;
 
     try {
-        const list = await List.findOne({ where: { id: listId } });
+        const list = await models.List.findOne({ where: { id: listId } });
 
         if (!list) {
             return res.status(404).json({
@@ -197,7 +220,7 @@ export async function deleteUserList(req, res) {
             collaboratorsEmails.includes(req.authenticatedUser.email);
 
         if (isOwner) {
-            await List.destroy({ where: { id: listId } });
+            await models.List.destroy({ where: { id: listId } });
 
             return res.status(200).json({
                 message: `Lista ${listTitle} deletada com sucesso.`,
@@ -209,7 +232,7 @@ export async function deleteUserList(req, res) {
                 .filter((email) => email !== req.authenticatedUser.email)
                 .join(',');
 
-            await List.update(
+            await models.List.update(
                 { collaboratorsEmails: updatedCollaborators },
                 { where: { id: listId } },
             );
