@@ -30,7 +30,7 @@ router.get('/:listId', authMiddleware, getTasksByList);
  *         name: listId
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: ID da lista para buscar tarefas
  *     responses:
  *       200:
@@ -53,13 +53,13 @@ router.get('/:listId/:taskId', authMiddleware, getTaskById);
  *         name: listId
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: ID da lista
  *       - in: path
  *         name: taskId
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: ID da tarefa
  *     responses:
  *       200:
@@ -84,7 +84,7 @@ router.post('/:listId', authMiddleware, createTask);
  *         name: listId
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: ID da lista
  *     requestBody:
  *       required: true
@@ -132,13 +132,13 @@ router.put('/:listId/:taskId', authMiddleware, updateTask);
  *         name: listId
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: ID da lista
  *       - in: path
  *         name: taskId
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: ID da tarefa
  *     requestBody:
  *       required: true
@@ -186,13 +186,13 @@ router.delete('/:listId/:taskId', authMiddleware, deleteTask);
  *         name: listId
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: ID da lista
  *       - in: path
  *         name: taskId
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *         description: ID da tarefa
  *     responses:
  *       200:

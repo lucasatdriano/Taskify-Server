@@ -36,7 +36,7 @@ router.get('/', authMiddleware, getUserLists);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: integer
+ *                     type: string
  *                   title:
  *                     type: string
  *                   daily:
@@ -63,7 +63,7 @@ router.get('/:listId', authMiddleware, getUserListById);
  *         required: true
  *         description: ID da lista
  *         schema:
- *           type: integer
+ *           type: string
  *     tags: [Lists]
  *     security:
  *       - BearerAuth: []
@@ -76,7 +76,7 @@ router.get('/:listId', authMiddleware, getUserListById);
  *               type: object
  *               properties:
  *                 id:
- *                   type: integer
+ *                   type: string
  *                 title:
  *                   type: string
  *                 daily:
@@ -127,7 +127,7 @@ router.post('/', authMiddleware, createUserList);
  *               type: object
  *               properties:
  *                 id:
- *                   type: integer
+ *                   type: string
  *                 title:
  *                   type: string
  *                 daily:
@@ -154,7 +154,7 @@ router.put('/:listId', authMiddleware, updateUserList);
  *         required: true
  *         description: ID da lista
  *         schema:
- *           type: integer
+ *           type: string
  *     tags: [Lists]
  *     security:
  *       - BearerAuth: []
@@ -179,13 +179,11 @@ router.put('/:listId', authMiddleware, updateUserList);
  *             schema:
  *               type: object
  *               properties:
- *                 message:
- *                   type: string
  *                 list:
  *                   type: object
  *                   properties:
  *                     id:
- *                       type: integer
+ *                       type: string
  *                     title:
  *                       type: string
  *                     daily:
@@ -216,7 +214,7 @@ router.delete('/:listId', authMiddleware, deleteUserList);
  *         required: true
  *         description: ID da lista
  *         schema:
- *           type: integer
+ *           type: string
  *     tags: [Lists]
  *     security:
  *       - BearerAuth: []

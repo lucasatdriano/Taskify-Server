@@ -54,7 +54,7 @@ export async function getUserListById(req, res) {
             where: {
                 id: listId,
                 [Op.or]: [
-                    { user_id: req.authenticatedUser.id },
+                    { userId: req.authenticatedUser.id },
                     {
                         collaboratorsEmails: {
                             [Op.like]: `%${req.authenticatedUser.email}%`,
@@ -64,6 +64,7 @@ export async function getUserListById(req, res) {
             },
             include: {
                 model: models.UserLists,
+                as: 'UserLists',
                 where: {
                     userId: req.authenticatedUser.id,
                 },
@@ -156,36 +157,39 @@ export async function updateUserList(req, res) {
                 },
                 { where: { id: listId } },
             );
-
-            const updatedList = await models.List.findOne({
-                where: { id: listId },
-            });
-
-            return res.json({
-                message: `A lista '${updatedList.title}' foi atualizada com sucesso.`,
-                list: updatedList,
-            });
         }
 
-        if (isCollaborator && fixed !== undefined) {
-            const [userListAssociation, created] =
-                await models.UserLists.findOrCreate({
-                    where: { userId: req.authenticatedUser.id, listId: listId },
-                    defaults: { fixed: fixed },
+        if (typeof fixed !== 'undefined') {
+            const userList = await models.UserLists.findOne({
+                where: { userId: req.authenticatedUser.id, listId: listId },
+            });
+
+            if (userList) {
+                await userList.update({ fixed });
+            } else {
+                await models.UserLists.create({
+                    userId: req.authenticatedUser.id,
+                    listId: listId,
+                    fixed: fixed,
                 });
-
-            if (!created) {
-                await userListAssociation.update({ fixed: fixed });
             }
-
-            return res.json({
-                message: `O atributo 'fixed' foi atualizado para ${fixed}.`,
-                fixed: fixed,
-            });
         }
 
-        return res.status(403).json({
-            error: `Você não tem permissão para atualizar a lista ${list.title}.`,
+        const updatedList = await models.List.findOne({
+            where: { id: listId },
+            include: [
+                {
+                    model: models.UserLists,
+                    as: 'UserLists',
+                    where: { userId: req.authenticatedUser.id },
+                    required: false,
+                },
+            ],
+        });
+
+        return res.json({
+            list: updatedList,
+            fixed: fixed,
         });
     } catch (error) {
         res.status(500).json({
