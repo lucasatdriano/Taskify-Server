@@ -40,6 +40,63 @@ export async function getTaskById(req, res) {
     }
 }
 
+export async function getPlannedTasks(req, res) {
+    const { userId } = req.params;
+
+    try {
+        const plannedTasks = await models.Task.findAll({
+            where: {
+                userId: userId,
+                dueDate: {
+                    [Op.not]: null,
+                },
+            },
+        });
+
+        res.json(plannedTasks);
+    } catch (error) {
+        res.status(500).json({
+            error: `Erro ao buscar tarefas planejadas.`,
+            details: error.message,
+        });
+    }
+}
+
+export async function getImportantTasks(req, res) {
+    const { userId } = req.params;
+
+    try {
+        const userLists = await models.List.findAll({
+            where: { userId: userId },
+            attributes: ['id'],
+        });
+
+        if (!userLists.length) {
+            return res
+                .status(404)
+                .json({ error: 'Nenhuma lista encontrada para o usuário.' });
+        }
+
+        const listIds = userLists.map((list) => list.id);
+
+        const importantTasks = await models.Task.findAll({
+            where: {
+                important: true,
+                listId: {
+                    [Op.in]: listIds,
+                },
+            },
+        });
+
+        res.json(importantTasks);
+    } catch (error) {
+        res.status(500).json({
+            error: `Erro ao buscar tarefas importantes.`,
+            details: error.message,
+        });
+    }
+}
+
 export async function createTask(req, res) {
     const { listId } = req.params;
     const {
@@ -49,6 +106,7 @@ export async function createTask(req, res) {
         completed,
         dueDate,
         notification,
+        important,
         file,
     } = req.body;
 
@@ -70,6 +128,7 @@ export async function createTask(req, res) {
             completed,
             dueDate,
             notification,
+            important,
             file,
             listId,
         });
@@ -82,6 +141,7 @@ export async function createTask(req, res) {
             completed: newTask.completed,
             dueDate: newTask.dueDate,
             notification: newTask.notification,
+            important: newTask.important,
             file: newTask.file,
             listId: newTask.listId,
         });
@@ -104,6 +164,7 @@ export async function updateTask(req, res) {
         completed,
         dueDate,
         notification,
+        important,
         file,
     } = req.body;
 
@@ -127,6 +188,7 @@ export async function updateTask(req, res) {
                     notification !== undefined
                         ? notification
                         : task.notification,
+                important: important !== undefined ? important : task.important,
                 file: file || task.file,
             },
             { where: { id: taskId, listId: listId } },

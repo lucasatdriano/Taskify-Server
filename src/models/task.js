@@ -23,6 +23,9 @@ export default (sequelize) => {
                 type: DataTypes.STRING,
                 allowNull: true,
                 defaultValue: null,
+                validate: {
+                    isIn: [['baixa', 'media', 'alta', null]],
+                },
             },
             completed: {
                 type: DataTypes.BOOLEAN,
@@ -42,6 +45,11 @@ export default (sequelize) => {
                 allowNull: true,
                 defaultValue: false,
             },
+            important: {
+                type: DataTypes.BOOLEAN,
+                allowNull: true,
+                defaultValue: false,
+            },
             file: {
                 type: DataTypes.STRING,
                 allowNull: true,
@@ -52,6 +60,15 @@ export default (sequelize) => {
                 allowNull: false,
                 references: {
                     model: 'tbLists',
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
+            },
+            userId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                references: {
+                    model: 'tbUsers',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
