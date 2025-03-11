@@ -1,4 +1,5 @@
 import express from 'express';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 import {
     getTasksByList,
     getTaskById,
@@ -8,7 +9,6 @@ import {
     updateTask,
     deleteTask,
 } from '../controllers/taskController.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 

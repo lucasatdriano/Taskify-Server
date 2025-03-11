@@ -23,12 +23,12 @@ export async function getTaskById(req, res) {
     }
 
     try {
-        const task = await models.Task.findOne({
-            where: { id: taskId, listId: listId },
-        });
+        const task = await models.Task.findByPk(taskId);
 
-        if (!task) {
-            return res.status(404).json({ error: 'Tarefa não encontrada' });
+        if (!task || task.listId !== listId) {
+            return res.status(404).json({
+                error: 'Tarefa não encontrada.',
+            });
         }
 
         res.json(task);
@@ -111,7 +111,7 @@ export async function createTask(req, res) {
     } = req.body;
 
     try {
-        const list = await models.List.findOne({ where: { id: listId } });
+        const list = await models.List.findByPk(listId);
 
         if (!list) {
             return res.status(404).json({
@@ -133,18 +133,7 @@ export async function createTask(req, res) {
             listId,
         });
 
-        res.status(201).json({
-            id: newTask.id,
-            title: newTask.title,
-            description: newTask.description,
-            priority: newTask.priority,
-            completed: newTask.completed,
-            dueDate: newTask.dueDate,
-            notification: newTask.notification,
-            important: newTask.important,
-            file: newTask.file,
-            listId: newTask.listId,
-        });
+        res.status(201).json(newTask);
     } catch (error) {
         res.status(500).json({
             error: `Erro ao criar tarefa na lista ${
@@ -169,15 +158,15 @@ export async function updateTask(req, res) {
     } = req.body;
 
     try {
-        const task = await models.Task.findOne({
-            where: { id: taskId, listId: listId },
-        });
+        const task = await models.Task.findByPk(taskId);
 
-        if (!task) {
-            return res.status(404).json({ error: 'Tarefa não encontrada.' });
+        if (!task || task.listId !== listId) {
+            return res.status(404).json({
+                error: 'Tarefa não encontrada.',
+            });
         }
 
-        const updatedTask = await models.Task.update(
+        await models.Task.update(
             {
                 title: title || task.title,
                 description: description || task.description,
@@ -194,9 +183,15 @@ export async function updateTask(req, res) {
             { where: { id: taskId, listId: listId } },
         );
 
-        res.status(200).json({
-            updatedTask,
-        });
+        const updatedTask = await models.Task.findByPk(taskId);
+
+        if (!updatedTask || updatedTask.listId !== listId) {
+            return res.status(404).json({
+                error: 'Tarefa atualizada não encontrada.',
+            });
+        }
+
+        res.status(200).json(updatedTask);
     } catch (error) {
         res.status(500).json({
             error: 'Erro ao atualizar tarefa.',
@@ -209,11 +204,9 @@ export async function deleteTask(req, res) {
     const { listId, taskId } = req.params;
 
     try {
-        const task = await models.Task.findOne({
-            where: { id: taskId, listId: listId },
-        });
+        const task = await models.Task.findByPk(taskId);
 
-        if (!task) {
+        if (!task || task.listId !== listId) {
             return res.status(404).json({
                 error: 'Tarefa não encontrada.',
             });

@@ -7,6 +7,46 @@
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     List:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID da lista.
+ *         title:
+ *           type: string
+ *           description: Título da lista.
+ *         daily:
+ *           type: boolean
+ *           description: Indica se a lista é diária.
+ *         collaboratorsEmails:
+ *           type: string
+ *           description: Emails dos colaboradores separados por vírgula.
+ *         fixed:
+ *           type: boolean
+ *           description: Indica se a lista é fixa.
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Data de criação da lista.
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Data de atualização da lista.
+ *       example:
+ *         id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+ *         title: "Lista de Compras"
+ *         daily: false
+ *         collaboratorsEmails: "colab1@example.com,colab2@example.com"
+ *         fixed: true
+ *         createdAt: "2023-10-01T12:00:00Z"
+ *         updatedAt: "2023-10-01T12:00:00Z"
+ */
+
+/**
+ * @swagger
  * /lists:
  *   get:
  *     summary: Recupera todas as listas do usuário autenticado
@@ -21,18 +61,7 @@
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   title:
- *                     type: string
- *                   daily:
- *                     type: boolean
- *                   collaboratorsEmails:
- *                     type: string
- *                   fixed:
- *                     type: boolean
+ *                 $ref: '#/components/schemas/List'
  *       401:
  *         description: Usuário não autenticado
  *       500:
@@ -60,18 +89,7 @@
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 title:
- *                   type: string
- *                 daily:
- *                   type: boolean
- *                 collaboratorsEmails:
- *                   type: string
- *                 fixed:
- *                   type: boolean
+ *               $ref: '#/components/schemas/List'
  *       401:
  *         description: Usuário não autenticado
  *       404:
@@ -93,35 +111,16 @@
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               daily:
- *                 type: boolean
- *               collaboratorsEmails:
- *                 type: string
- *                 description: Emails dos colaboradores separados por vírgula
- *               fixed:
- *                 type: boolean
+ *             $ref: '#/components/schemas/List'
+ *             required:
+ *               - title
  *     responses:
  *       201:
  *         description: Lista criada com sucesso
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 title:
- *                   type: string
- *                 daily:
- *                   type: boolean
- *                 collaboratorsEmails:
- *                   type: string
- *                 fixed:
- *                   type: boolean
+ *               $ref: '#/components/schemas/List'
  *       401:
  *         description: Usuário não autenticado
  *       500:
@@ -148,35 +147,14 @@
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               collaboratorsEmails:
- *                 type: string
- *               fixed:
- *                 type: boolean
+ *             $ref: '#/components/schemas/List'
  *     responses:
  *       200:
  *         description: Lista atualizada com sucesso
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 list:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                     title:
- *                       type: string
- *                     daily:
- *                       type: boolean
- *                     collaboratorsEmails:
- *                       type: string
- *                     fixed:
- *                       type: boolean
+ *               $ref: '#/components/schemas/List'
  *       401:
  *         description: Usuário não autenticado
  *       404:

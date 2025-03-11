@@ -7,8 +7,8 @@ const syncDatabase = async () => {
             .then(() => {
                 console.log('Modelos sincronizados com sucesso.');
             })
-            .catch((error) => {
-                console.error('Erro ao sincronizar os modelos:', error);
+            .catch((err) => {
+                console.error('Erro ao sincronizar os modelos:', err);
             });
         console.log('Banco de dados sincronizado!');
     } catch (err) {

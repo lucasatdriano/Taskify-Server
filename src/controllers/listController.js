@@ -112,10 +112,7 @@ export async function createUserList(req, res) {
         });
 
         res.status(201).json({
-            id: newList.id,
-            title: newList.title,
-            daily: newList.daily,
-            collaboratorsEmails: newList.collaboratorsEmails,
+            list: newList,
             fixed: fixed,
         });
     } catch (error) {
@@ -135,7 +132,7 @@ export async function updateUserList(req, res) {
     }
 
     try {
-        const list = await models.List.findOne({ where: { id: listId } });
+        const list = await models.List.findByPk(listId);
 
         if (!list) {
             return res.status(404).json({
@@ -203,7 +200,7 @@ export async function deleteUserList(req, res) {
     const { listId } = req.params;
 
     try {
-        const list = await models.List.findOne({ where: { id: listId } });
+        const list = await models.List.findByPk(listId);
 
         if (!list) {
             return res.status(404).json({

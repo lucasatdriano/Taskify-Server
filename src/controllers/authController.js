@@ -5,6 +5,7 @@ import { models } from '../models/index.js';
 
 export async function forgotPassword(req, res) {
     const { email } = req.body;
+
     try {
         const user = await models.User.findOne({ where: { email: email } });
 
@@ -61,7 +62,7 @@ export async function resetPassword(req, res) {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await models.User.findOne({ where: { id: decoded.id } });
+        const user = await models.User.findByPk(decoded.id);
 
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado.' });
@@ -69,7 +70,7 @@ export async function resetPassword(req, res) {
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
-        await models.user.save();
+        await models.User.save();
 
         res.json({ message: 'Senha redefinida com sucesso!' });
     } catch (error) {
@@ -92,11 +93,9 @@ export async function refreshUserToken(req, res) {
 
         const decoded = jwt.verify(refreshToken, secret);
 
-        const user = await models.User.findOne({
-            where: { id: decoded.id, refreshToken },
-        });
+        const user = await models.User.findByPk(decoded.id);
 
-        if (!user) {
+        if (!user || user.refreshToken !== refreshToken) {
             return res.status(403).json({
                 error: 'Refresh token não encontrado no banco de dados',
             });

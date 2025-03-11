@@ -6,8 +6,8 @@ services:
         container_name: db_taskify
         restart: always
         environment:
-            MYSQL_ROOT_PASSWORD: 12345678
-            MYSQL_DATABASE: dbTaskify
+            MYSQL_ROOT_PASSWORD: ${DB_PASS}
+            MYSQL_DATABASE: ${DB_NAME}
         ports:
             - '3308:3306'
         volumes:
@@ -22,13 +22,19 @@ services:
         ports:
             - '3000:3000'
         environment:
-            DB_HOST: db
-            DB_USER: root
-            DB_PASS: 12345678
-            DB_NAME: dbTaskify
+            - PORT=${PORT}
+            - DB_HOST=db
+            - DB_USER=${DB_USER}
+            - DB_PASS=${DB_PASS}
+            - DB_NAME=${DB_NAME}
+            - DB_DIALECT=${DB_DIALECT}
+            - JWT_SECRET=${JWT_SECRET}
+            - EMAIL_USER=${EMAIL_USER}
+            - EMAIL_PASS=${EMAIL_PASS}
+            - NODE_ENV=${NODE_ENV}
         volumes:
             - .:/app
-        command: npm run dev
+        command: 'npm run dev'
 
 volumes:
     db_data:

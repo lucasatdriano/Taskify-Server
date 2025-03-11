@@ -1,4 +1,5 @@
 import express from 'express';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 import {
     getUserLists,
     getUserListById,
@@ -6,7 +7,6 @@ import {
     updateUserList,
     deleteUserList,
 } from '../controllers/listController.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 

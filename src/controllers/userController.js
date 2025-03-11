@@ -23,11 +23,7 @@ export async function registerUser(req, res) {
             password: hashedPassword,
         });
 
-        res.status(201).json({
-            id: newUser.id,
-            name: newUser.name,
-            email: newUser.email,
-        });
+        res.status(201).json(newUser);
     } catch (error) {
         res.status(500).json({
             error: 'Erro ao cadastrar usuário.',
@@ -54,15 +50,15 @@ export async function Login(req, res) {
             return res.status(401).json({ error: 'Senha incorreta!' });
         }
 
-        const id = user.id;
+        const userId = user.id;
         const accessToken = jwt.sign(
-            { id: user.id, email: user.email },
+            { id: userId, email: user.email },
             secret,
             { expiresIn: '1h' },
         );
 
         const refreshToken = jwt.sign(
-            { id: user.id, email: user.email },
+            { id: userId, email: user.email },
             secret,
             { expiresIn: '30d' },
         );
@@ -70,7 +66,7 @@ export async function Login(req, res) {
         user.refreshToken = refreshToken;
         await user.save();
 
-        res.json({ id, accessToken, refreshToken });
+        res.json({ userId, accessToken, refreshToken });
     } catch (error) {
         res.status(500).json({
             error: 'Erro ao fazer login.',

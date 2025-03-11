@@ -4,6 +4,56 @@
  *   name: User
  *   description: Gerenciamento de usuários
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID do usuário.
+ *         name:
+ *           type: string
+ *           description: Nome do usuário.
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email do usuário.
+ *         password:
+ *           type: string
+ *           description: Senha do usuário (não retornada em respostas).
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Data de criação do usuário.
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Data de atualização do usuário.
+ *       example:
+ *         id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+ *         name: "João Silva"
+ *         email: "joao.silva@example.com"
+ *         createdAt: "2023-10-01T12:00:00Z"
+ *         updatedAt: "2023-10-01T12:00:00Z"
+ *
+ *     Tokens:
+ *       type: object
+ *       properties:
+ *         accessToken:
+ *           type: string
+ *           description: Token de acesso JWT.
+ *         refreshToken:
+ *           type: string
+ *           description: Token de atualização JWT.
+ *       example:
+ *         accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *         refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ */
+
 /**
  * @swagger
  * /users/register:
@@ -11,19 +61,13 @@
  *     summary: Registra um novo usuário
  *     description: Cria um novo usuário com nome, email e senha.
  *     tags: [User]
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
+ *             $ref: '#/components/schemas/User'
  *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
  *               password:
  *                 type: string
  *             required:
@@ -33,6 +77,10 @@
  *     responses:
  *       201:
  *         description: Usuário registrado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       500:
  *         description: Erro ao cadastrar usuário
  */
@@ -44,8 +92,6 @@
  *     summary: Realiza login do usuário
  *     description: Autentica o usuário e retorna tokens JWT (accessToken e refreshToken).
  *     tags: [User]
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -66,14 +112,7 @@
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 accessToken:
- *                   type: string
- *                 refreshToken:
- *                   type: string
+ *               $ref: '#/components/schemas/Tokens'
  *       401:
  *         description: Usuário não encontrado ou senha incorreta
  *       500:
@@ -99,6 +138,10 @@
  *     responses:
  *       200:
  *         description: Detalhes do usuário encontrados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       404:
  *         description: Usuário não encontrado
  *       500:
@@ -135,6 +178,10 @@
  *     responses:
  *       200:
  *         description: Nome atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       404:
  *         description: Usuário não encontrado
  *       500:
